@@ -4,5 +4,10 @@
  */
 
 function sleep (seconds) {
-
+    let start = Date.now();
+    while ((Date.now() - start)/1000 < seconds){}
 }
+
+console.log("Before waiting");
+sleep(1);
+console.log("After waiting");
