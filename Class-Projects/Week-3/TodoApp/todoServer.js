@@ -41,6 +41,7 @@
  */
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require("path");
 const fs = require("fs");
 const port = 3000;
 
@@ -48,7 +49,7 @@ const app = express();
 
 app.use(bodyParser.json());
 
-todoArray = [];
+let todoArray = [];
 
 fs.readFile('todoArray.json', (err, data) => {
   todoArray = JSON.parse(data);
@@ -78,7 +79,7 @@ function sendTodo(req,res){
 
 function updateTodoArray(req,res){
   let body = req.body;
-  body['id'] = todoArray + 1;
+  body['id'] = todoArray.length + 1;
   todoArray.push(body);
   res.status(201).send({id : todoArray.length});
   writeArrayToTxt();
@@ -117,4 +118,10 @@ app.put('/todos/:id', updateTodo);
 
 app.delete('/todos/:id', deleteTodo);
 
+app.get('/', (req,res)=>{
+  res.sendFile(path.join(__dirname, "index.html"));
+})
+
 module.exports = app;
+
+app.listen(port, () => {console.log("Listening")});

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO App</title>
+    <script>
+        let todoArray = [];
+
+        function fetchAllTodos(){
+            fetch("http://localhost:3000/todos", {
+                method: "GET",
+            }).then(callback);
+        }
+
+        function callback(resp){
+            resp.json().then((data) => {
+                todoArray = data;
+                console.log(todoArray);
+                var parentElement = document.getElementById("todoList");
+                parentElement.innerHTML = JSON.stringify(data);
+                //renderTodos();
+            })
+        }
+
+        fetchAllTodos();
+
+        function renderTodos(){
+            const todoList = document.getElementById("todoList");
+
+            todoList.innerHTML = "";
+
+            todoArray.forEach(todo=>{
+                const todoItem = document.createElement("div");
+                todoItem.innerHTML = `
+                <strong>${todo.title}</strong>
+                <p>${todo.description}</p>
+                <button onclick = "deleteTodo(${todo.id})"> Delete todo </button>  
+                `
+                todoList.appendChild(todoItem);
+            })
+        }
+
+        function onPress(){
+            const inputTitle = document.getElementById('inputTitle');
+            const inputDescription = document.getElementById('inputDescription');
+
+            fetch("http://localhost:3000/todos", {
+                method: "POST",
+                body : JSON.stringify({
+                    title : inputTitle.value,
+                    description : inputDescription.value
+                }),
+                headers : {
+                    "Content-Type" : "application/json"
+                }
+            }).then(fetchAllTodos);
+        }
+
+        function deleteTodo(id){
+            fetch(`http://localhost:3000/todos/${id}`, {
+                method: "DELETE",
+            }).then(fetchAllTodos);
+        }
+    </script>
+</head>
+<body>
+    Todo title
+    <input type="text" id = "inputTitle"></input>
+    <br><br>
+    Todo Description
+    <input type="text" id = "inputDescription"></input>
+    <br><br>
+    <button onclick = "onPress()"> Send todo </button>  
+    <br><br>
+    Pending todos:
+    <br>
+    <div id = "todoList"></div>
+</body>
+</html>
