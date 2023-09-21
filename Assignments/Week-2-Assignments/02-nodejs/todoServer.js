@@ -43,8 +43,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require("fs");
 const port = 3000;
+const cors = require("cors")
 
 const app = express();
+app.use(cors());
 
 app.use(bodyParser.json());
 
@@ -54,7 +56,7 @@ fs.readFile('todoArray.json', (err, data) => {
   todoArray = JSON.parse(data);
 })
 
-function writeArrayToTxt(){
+function writeArrayToJson(){
   fs.writeFile('todoArray.json', JSON.stringify(todoArray), (err) => {
     if (err){
       console.log("Cannot write to file");
@@ -62,11 +64,11 @@ function writeArrayToTxt(){
   })
 }
 
-function sendTodoArray(req,res){
+app.get('/todos', (req,res)=>{
   res.json(todoArray);
-}
+});
 
-function sendTodo(req,res){
+app.get('/todos/:id', (req,res)=>{
   let id = req.params.id - 1; 
   if (id >= 0 && id < todoArray.length){
     res.send(todoArray[id]);
@@ -74,47 +76,43 @@ function sendTodo(req,res){
   else{
     res.status(404).send("Todo not found");
   }
-}
+});
 
-function updateTodoArray(req,res){
+app.post('/todos', (req,res)=>{
   let body = req.body;
-  body['id'] = todoArray + 1;
+  body['id'] = Math.floor(Math.random() * 100000000);
   todoArray.push(body);
-  res.status(201).send({id : todoArray.length});
-  writeArrayToTxt();
-}
+  res.status(201).send({id : body['id']});
+  writeArrayToJson();
+});
 
-function updateTodo(req,res){
-  let id = req.params.id - 1;
-  if (id >= 0 && id < todoArray.length){
+app.put('/todos/:id', (req,res)=>{
+  let id = req.params.id;
+  let todo = todoArray.find(item=>item.id === id);
+  if (todo){
     todoArray[id] = req.body;
     res.status(200).send("Todo updated successfully");
-    writeArrayToTxt();
+    writeArrayToJson();
   }
   else{
     res.status(404).send("Todo not found");
   }
-}
+});
 
-function deleteTodo(req,res){
-  let id = req.params.id - 1;
-  if (id >= 0 && id < todoArray.length){
-    todoArray.splice(id, 1);
+app.delete('/todos/:id', (req,res)=>{
+  let id = req.params.id;
+  let oldLength = todoArray.length;
+  todoArray = todoArray.filter(item => item.id != id);
+  let newLength = todoArray.length;
+  if (oldLength !== newLength){
     res.status(200).send("Todo deleted successfully");
-    writeArrayToTxt();
+    writeArrayToJson();
   }
   else{
     res.status(404).send("Todo not found");
   }
-}
-app.get('/todos', sendTodoArray);
+});
 
-app.get('/todos/:id', sendTodo);
 
-app.post('/todos', updateTodoArray);
-
-app.put('/todos/:id', updateTodo);
-
-app.delete('/todos/:id', deleteTodo);
-
-module.exports = app;
+//module.exports = app;
+app.listen(3000);
