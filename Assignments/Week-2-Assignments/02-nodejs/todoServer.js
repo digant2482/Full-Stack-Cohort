@@ -80,10 +80,13 @@ app.get('/todos/:id', (req,res)=>{
 
 app.post('/todos', (req,res)=>{
   let body = req.body;
-  body['id'] = Math.floor(Math.random() * 100000000);
-  todoArray.push(body);
-  res.status(201).send({id : body['id']});
-  writeArrayToJson();
+  //Empty todos are descarded
+  if (body.description || body.title){
+    body['id'] = Math.floor(Math.random() * 100000000);
+    todoArray.push(body);
+    res.status(201).send({id : body['id']});
+    writeArrayToJson();
+  }
 });
 
 app.put('/todos/:id', (req,res)=>{
@@ -115,4 +118,4 @@ app.delete('/todos/:id', (req,res)=>{
 
 
 //module.exports = app;
-app.listen(3000);
+app.listen(port);

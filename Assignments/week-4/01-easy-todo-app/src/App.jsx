@@ -3,14 +3,8 @@ import './App.css'
 import axios from 'axios';
 
 //Functions
-function deleteTodo(todoId){
-  console.log(todoId);
-  axios.delete(`http://localhost:3000/todos/${todoId}`);
-}
 
-function App() {
-
-  // fetch all todos from server
+function useTodo(){
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
@@ -20,11 +14,45 @@ function App() {
     })}, 1000);
   },[])
 
+  return todos;
+}
+
+
+function App() {
+
+  // fetch all todos from server
+  const todos = useTodo();
+
+  const [newTodo, setNewTodo] = useState({title : "", description: ""});
+
+  // Event handler for title input
+  const handleTitleChange = (event) => {
+    setNewTodo({ ...newTodo, title: event.target.value });
+  };
+
+  // Event handler for description input
+  const handleDescriptionChange = (event) => {
+    setNewTodo({ ...newTodo, description: event.target.value });
+  };
+
+
   return (
     <>
       <div>
         <h1>Easy Todo App</h1>
-        <input type="text" />
+        <br />
+        <h2>Title</h2>
+        <input type="text" 
+        onChange = {handleTitleChange}/>
+        <h3>Description</h3>
+        <input type="text"
+         onChange = {handleDescriptionChange}/>
+        <br/>
+        <br/>
+        <button onClick={() => {
+          axios.post("http://localhost:3000/todos", newTodo);
+        }
+        }>Create Todo</button>
         <br/>
         {todos.map((item) => {
           return <Todo title = {item.title}
@@ -42,7 +70,9 @@ function Todo(props) {
     return <div>
         {props.title}
         {props.description}
-        <button onClick = {() => {deleteTodo(props.id)}}> DELETE </button>
+        <button onClick = {() => {
+            axios.delete(`http://localhost:3000/todos/${props.id}`);
+          }}> DELETE </button>
     </div>
 }
 

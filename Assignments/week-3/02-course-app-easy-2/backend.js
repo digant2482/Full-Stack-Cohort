@@ -3,11 +3,13 @@ const fs = require('fs')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const app = express()
+const cors = require("cors")
 const port = 3000
 const secretKeyAdmin = "adminS3CR3T";
 const secretKeyUser = "userS3CR3T";
 
 app.use(bodyParser.json());
+app.use(cors());
 
 //Read admin credentials from file
 try{
@@ -70,129 +72,138 @@ function writeUserCoursesToDatabase(){
 }
 
 //Authentication tokens
-function authenticateAdmin(req, res){
+function authenticateAdmin(req, res, next){
     const authToken = req.headers.token.split(" ")[1];
     try {
-        var decryptedObject = jwt.verify(authToken, secretKeyAdmin);
+        const decryptedObject = jwt.verify(authToken, secretKeyAdmin);
+        req.user = decryptedObject;
+        next();
     }
-    catch {
+    catch (err){
         res.status(403).json({ message : 'Admin authentication failed'});
-        return;
-    }
-    const admin = adminCredentialsArray.find((item) => {
-        return item.username === decryptedObject.username;
-    })
-    return admin.username;
+    }    
 }
 
-function authenticateUser(req, res){
+function authenticateUser(req, res, next){
     const authToken = req.headers.token.split(" ")[1];
     try{
-        var decryptedObject = jwt.verify(authToken, secretKeyUser);
+        const decryptedObject = jwt.verify(authToken, secretKeyUser);
+        req.user = decryptedObject;
+        next();
     }
     catch {
         res.status(403).json({ message : 'User authentication failed'});
-        return;
     }
-    const user = userCredentialsArray.find((item) => {
-        return item.username === decryptedObject.username;
-    })
-    return user.username;
 }
 
 app.post('/admin/signup', (req,res) => {
-    let newAdminCredentials = {};
+    const { username, password } = req.body;
     for (const admin of adminCredentialsArray){
-        if (admin.username == req.body.username){
+        if (admin.username === username){
             res.status(400).send("Username is taken, please try another username");
             return;
         } 
     }
 
-    newAdminCredentials['username'] = req.body.username;
-    newAdminCredentials['password'] = req.body.password;
-    adminCredentialsArray.push(newAdminCredentials);
-    const authToken = jwt.sign({username : req.body.username}, secretKeyAdmin, {expiresIn : '1h'});
-    res.send(authToken);
+    adminCredentialsArray.push({ username, password});
+    //Send authorization token
+    const token = jwt.sign({username, role: 'admin'}, secretKeyAdmin);
+    res.send({message : "Admin created successfully", token});
 
     writeAdminCredentialsToDatabase();
 })
 
 app.post('/admin/login', (req,res) => {
     const {username, password} = req.headers;
-    console.log(username);
-    console.log(password);
     const admin = adminCredentialsArray.find(item => 
-        item.username === username && item.password === password)
-    console.log(admin);
+        item.username === username && item.password == password)
     if (!admin){
         res.status(403).json({ message : 'Admin authentication failed'});
         return;
     }
-    const authToken = jwt.sign({username : username}, secretKeyAdmin, { expiresIn: '1h' });
-    res.send(authToken);
+    const token = jwt.sign({username}, secretKeyAdmin);
+    res.send({message : "Logged in successfully", token});
 })
 
-app.post('/admin/courses', (req,res) => {
-    let username = authenticateAdmin(req,res);
-    if (username){
-        let body = req.body;
-        let id = Math.floor(Math.random() * 100000000);
-        body['id'] = id;
-        if (username in adminCourseArray){
-            adminCourseArray[username][id] = body;
+app.post('/admin/courses', authenticateAdmin, (req,res) => {
+    const username = req.user.username;
+    let body = req.body;
+    let id = Math.floor(Math.random() * 100000000);
+    body['id'] = id;
+
+    if (username in adminCourseArray)
+        adminCourseArray[username][id] = body;
+    else 
+        adminCourseArray[username] = {[id] : body};
+
+    res.send({message: 'Course created successfully', courseId: id});
+    writeAdminCoursesToDatabase();
+})
+
+app.get('/admin/courses/:courseId', authenticateAdmin, (req,res) => {
+    let username = req.user.username;
+    let courseId = req.params.courseId;
+    for (const key in adminCourseArray[username]){
+        if (key === courseId){ 
+            res.send(adminCourseArray[username][courseId]); 
+            return;
         }
-        else {
-            adminCourseArray[username] = {[id] : body};
-        }  
-
-        res.send({message: 'Course created successfully', courseId: id});
-        writeAdminCoursesToDatabase();
     }
+    res.status(403).send("Course not found");
 })
 
-app.put('/admin/courses/:courseId', (req,res) => {
-    let username = authenticateAdmin(req,res);
-    if (username){
-        let courseId = req.params.courseId;
-        for (const key in adminCourseArray[username]){
-            if (key === courseId){
-                let body = req.body;
-                body['id'] = courseId;
-                adminCourseArray[username][courseId] = body;
-                res.send("Course updated successfully"); 
-                writeAdminCoursesToDatabase(); 
-                return;
-            }
+app.put('/admin/courses/:courseId', authenticateAdmin, (req,res) => {
+    let username = req.user.username;
+    let courseId = req.params.courseId;
+    for (const key in adminCourseArray[username]){
+        if (key === courseId){
+            let body = req.body;
+            body['id'] = courseId;
+            adminCourseArray[username][courseId] = body;
+            res.send("Course updated successfully"); 
+            writeAdminCoursesToDatabase(); 
+            return;
         }
-        res.status(403).send("Course not found");
-    } 
+    }
+    res.status(403).send("Course not found");
 })
 
-app.get('/admin/courses', (req,res) => {
-    let username = authenticateAdmin(req,res);
-    if (username){
-        let courses = {};
-        courses['courses'] = adminCourseArray[username];
-        res.json(courses);
-    }
-   
+app.get('/admin/courses', authenticateAdmin, (req,res) => {
+    let courses = {};
+    courses['courses'] = adminCourseArray[req.user.username];
+    res.json(courses);   
 })
+
+app.delete('/admin/courses/:id', authenticateAdmin, (req, res) => {
+    const username = req.user.username;
+    const id = req.params.id;
+    for (courseId in adminCourseArray[username]){
+        if (courseId == id){
+            delete adminCourseArray[username][courseId];
+            writeAdminCoursesToDatabase(); 
+            res.send({message: "Course deleted successfully", courses : adminCourseArray[username]});
+            return;
+        }
+    }
+    res.status(404).send("Course not found");
+})
+
+
+
 
 app.post('/users/signup', (req,res) => {
-    let newUserCredentials = {};
+    const { username, password } = req.body;
     for (const user of userCredentialsArray){
-        if (user.username == req.body.username){
+        if (user.username == username){
             res.send(400).send("Username is taken, please try another");
             return;
         } 
     }
 
-    newUserCredentials['username'] = req.body.username;
-    newUserCredentials['password'] = req.body.password;
-    userCredentialsArray.push(newUserCredentials);
-    const authToken = jwt.sign({username : req.body.username}, secretKeyUser, {expiresIn : "1h"});
-    res.send(authToken);
+    userCredentialsArray.push({username, password});
+    //Send authorization token
+    const token = jwt.sign({username, role: 'user'}, secretKeyUser);
+    res.send({message : "User created successfully", token});
 
     writeUserCredentialsToDatabase();
 })
@@ -205,59 +216,48 @@ app.post('/users/login', (req,res) => {
         res.status(403).json({ message : 'User authentication failed'});
         return;
     }
-    const authToken = jwt.sign({username : username}, secretKeyUser, {expiresIn : '1h'});
-    res.send(authToken);
+    const token = jwt.sign({username}, secretKeyUser);
+    res.json({message : "Logged in successfully", token});
 })
 
 //View all courses
-app.get('/users/courses', (req,res) => {
-    if (authenticateUser(req,res)){
-        res.json(adminCourseArray);
-    }
+app.get('/users/courses', authenticateUser, (req,res) => {
+    let courseArray = Object.values(adminCourseArray).filter(item => item.published === true);
+    res.json(courseArray);;
 })
 
 //Purchase course
-app.post('/users/courses/:courseId', (req,res) => {
-    let username = authenticateUser(req,res);
-    if (username){
-        let courseId = req.params.courseId;
-        let courseDetails = null;
-        for (const admin in adminCourseArray){
-            for (const adminCourseId in adminCourseArray[admin]){
-                if (adminCourseId == courseId){
-                    courseDetails = adminCourseArray[admin][adminCourseId];
-                }
-            }
+app.post('/users/courses/:courseId', authenticateUser, (req,res) => {
+    let username = req.user.username;
+    let courseId = req.params.courseId;
+    let courseDetails = null;
+    for (key in adminCourseArray){
+        for (course in adminCourseArray[key]){
+            if (course == courseId)
+                courseDetails = adminCourseArray[key][course];
         }
-        if (!courseDetails){
-            res.status(404).send("Course doesn't exists");
-            return;
-        }
-
-        if (username in userCourseArray){
+    }
+    if (courseDetails){
+        if (username in userCourseArray)
             userCourseArray[username].push(courseDetails);
-        }
-        else{
+        else
             userCourseArray[username] = [courseDetails];
-        }
+
         res.send("Course purchased successfully");
         writeUserCoursesToDatabase();
+    } else {
+        res.status(404).send("Course doesn't exists");
+        return;
     }
 })
 
 //View all purchased course
-app.get('/users/purchasedCourses', (req,res) => {
-    let username = authenticateUser(req, res);
-    if (username){
-        if (userCourseArray[username]){
-            res.json(userCourseArray[username]); 
-        }
-        else {
-            res.send("No courses purchased");
-        }   
-    }
+app.get('/users/purchasedCourses', authenticateUser, (req,res) => {
+    if (userCourseArray[req.user.username])
+        res.json(userCourseArray[req.user.username]); 
+    else 
+        res.send("No courses purchased");    
 })
-
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
