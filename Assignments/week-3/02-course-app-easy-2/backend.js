@@ -222,8 +222,34 @@ app.post('/users/login', (req,res) => {
 
 //View all courses
 app.get('/users/courses', authenticateUser, (req,res) => {
-    let courseArray = Object.values(adminCourseArray).filter(item => item.published === true);
-    res.json(courseArray);;
+    let courses = [];
+    for (admin in adminCourseArray){
+        for (courseId in adminCourseArray[admin]){
+            if (adminCourseArray[admin][courseId].published === 'true'){
+                console.log(adminCourseArray[admin][courseId]);
+                courses.push(adminCourseArray[admin][courseId]);
+            }
+        }
+    }
+    res.json(courses);;
+})
+
+//View course by course Id
+app.get('/users/courses/:courseId', authenticateUser, (req,res) => {
+    let courseId = req.params.courseId;
+    let courseDetails = null;
+    for (key in adminCourseArray){
+        for (course in adminCourseArray[key]){
+            if (course == courseId)
+                courseDetails = adminCourseArray[key][course];
+        }
+    }
+
+    if (courseDetails){
+        res.send(courseDetails);
+    } else {
+        res.status(404).send("Course doesn't exists");
+    }
 })
 
 //Purchase course
