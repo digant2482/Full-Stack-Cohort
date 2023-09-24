@@ -195,7 +195,7 @@ app.post('/users/signup', (req,res) => {
     const { username, password } = req.body;
     for (const user of userCredentialsArray){
         if (user.username == username){
-            res.send(400).send("Username is taken, please try another");
+            res.status(400).send({message: "Username is taken, please try another"});
             return;
         } 
     }
@@ -213,11 +213,16 @@ app.post('/users/login', (req,res) => {
     const user = userCredentialsArray.find(item => 
         item.username === username && item.password === password)
     if (!user){
-        res.status(403).json({ message : 'User authentication failed'});
+        res.status(403).json({ message : 'Invalid email or password'});
         return;
     }
     const token = jwt.sign({username}, secretKeyUser);
     res.json({message : "Logged in successfully", token});
+})
+
+//Check login
+app.get('/users/me', authenticateUser, (req, res)=>{
+    res.send({email : req.user.username});
 })
 
 //View all courses

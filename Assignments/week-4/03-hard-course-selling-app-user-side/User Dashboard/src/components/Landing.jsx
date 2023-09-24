@@ -8,9 +8,9 @@ function Landing(){
     return (
         <div>
             <h1>Welcome to Course Selling Website</h1>
-            <button onClick = {()=>{navigate('/register')}}>Register</button>
+            <button variant="contained" onClick = {()=>{navigate('/register')}}>Register</button>
             <br/>
-            <button onClick = {()=>{navigate('/login')}}>Login</button>
+            <button variant="contained" onClick = {()=>{navigate('/login')}}>Login</button>
         </div>
     )
 }
