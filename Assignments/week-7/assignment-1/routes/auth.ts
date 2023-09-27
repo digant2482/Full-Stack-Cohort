@@ -2,10 +2,20 @@ import jwt from "jsonwebtoken";
 import express from 'express';
 import { authenticateJwt, SECRET } from "../middleware/";
 import { User } from "../db";
+import { signupInput } from "@digant/common";
 const router = express.Router();
 
   router.post('/signup', async (req, res) => {
-    const { username, password } = req.body;
+    const parsedInput = signupInput.safeParse(req.body);
+    if (!parsedInput.success){
+      res.status(401).json({
+        msg: parsedInput.error
+      });
+      return;
+    }
+
+    const username = parsedInput.data.username;
+    const password = parsedInput.data.password;
     const user = await User.findOne({ username });
     if (user) {
       res.status(403).json({ message: 'User already exists' });
@@ -18,7 +28,16 @@ const router = express.Router();
   });
   
   router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const parsedInput = signupInput.safeParse(req.body);
+    if (!parsedInput.success){
+      res.status(401).json({
+        msg: parsedInput.error
+      });
+      return;
+    }
+
+    const username = parsedInput.data.username;
+    const password = parsedInput.data.password;
     const user = await User.findOne({ username, password });
     if (user) {
       const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: '1h' });

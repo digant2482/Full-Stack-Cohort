@@ -1,48 +1,20 @@
 import express from 'express';
 import { authenticateJwt, SECRET } from "../middleware/index";
 import { Todo } from "../db";
-import { z } from 'zod';
-
-const titleSchema = z.string();
-const descriptionSchema = z.string();
-const userIdSchema = z.string();
-const doneSchema = z.boolean();
-
-interface CreateTodoInput {
-  title : string;
-  description : string;
-}
+import { todoBodyInput } from '@digant/common';
 
 const router = express.Router();
 
 router.post('/todos', authenticateJwt, (req, res) => {
-
-  const titleCheck = titleSchema.safeParse(req.body.title);
-  const descriptionCheck = descriptionSchema.safeParse(req.body.description);
-  const doneCheck = doneSchema.safeParse(req.body.done);
-  const userIdCheck = userIdSchema.safeParse(req.headers['userId']);
-  if (!titleCheck.success){
+  const parsedInput = todoBodyInput.safeParse(req.body);
+  if (!parsedInput.success){
     res.status(422).json({ error: 'Invalid title' });
     return;
   }
-  if (!descriptionCheck.success){
-    res.status(422).json({ error: 'Invalid Description' });
-    return;
-  }
-  if (!doneCheck.success){
-    res.status(422).json({ error: 'Invalid published (done)' });
-    return;
-  }
-  if (!userIdCheck.success){
-    res.status(422).json({ error: 'Invalid userId' });
-    return;
-  }
-  const input : CreateTodoInput = req.body;
-  const done = false;
-  const userId = req.headers['userId'];
 
+  const input = parsedInput.data;
 
-  const newTodo = new Todo({ title : input.title, description : input.description, done, userId });
+  const newTodo = new Todo({ title : input.title, description : input.description, done: input.done, id : input.id });
 
   newTodo.save()
     .then((savedTodo) => {

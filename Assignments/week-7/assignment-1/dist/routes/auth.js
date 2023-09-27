@@ -16,9 +16,18 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const express_1 = __importDefault(require("express"));
 const middleware_1 = require("../middleware/");
 const db_1 = require("../db");
+const common_1 = require("@digant/common");
 const router = express_1.default.Router();
 router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, password } = req.body;
+    const parsedInput = common_1.signupInput.safeParse(req.body);
+    if (!parsedInput.success) {
+        res.status(401).json({
+            msg: parsedInput.error
+        });
+        return;
+    }
+    const username = parsedInput.data.username;
+    const password = parsedInput.data.password;
     const user = yield db_1.User.findOne({ username });
     if (user) {
         res.status(403).json({ message: 'User already exists' });
