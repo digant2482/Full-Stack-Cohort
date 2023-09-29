@@ -1,5 +1,5 @@
-const express = require('express');
-const mongoose = require('mongoose');
+import express from 'express';
+import mongoose from 'mongoose';
 const app = express();
 const port = 3000;
 const cors = require("cors");
@@ -12,7 +12,7 @@ app.use('/admin', adminRouter);
 app.use('/users', usersRouter);
 
 //Connect with MongoDB
-mongoose.connect("mongodb+srv://digantwork1:d2XgFkmpq9HYnihr@cluster0.rg11af8.mongodb.net/Courses", {useNewUrlParser : true, useUnifiedTopology : true});
+mongoose.connect("mongodb+srv://digantwork1:d2XgFkmpq9HYnihr@cluster0.rg11af8.mongodb.net/Courses");
 
 //Start the server
 app.listen(port, () => {

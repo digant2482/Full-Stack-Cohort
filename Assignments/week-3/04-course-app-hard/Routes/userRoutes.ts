@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 const { authenticateUser, secretKeyUser } = require("../Authentication/Authentication");
 const { Users, Courses } = require("../Database/mongooseModels");
-const express = require('express');
+import express from 'express';
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ router.post('/login', async (req,res) => {
 
 //Check login
 router.get('/me', authenticateUser, async (req,res) => {
-    res.json({username: req.user.username});
+    res.json({username: req.headers['username']});
 })
 
 //View all courses
@@ -54,8 +54,8 @@ router.get('/courses/:courseId', authenticateUser, async (req,res) => {
             res.status(404).json({message: "Course not found"});
         }
     }
-    catch (error) {
-        res.status(404).json({message: error.message});
+    catch {
+        res.status(404).json({message: "Course doesn't exist"});
     }
 })
 
@@ -64,7 +64,7 @@ router.post('/courses/:courseId', authenticateUser, async (req,res) => {
     let courseId = req.params.courseId;
     try {
         const course = await Courses.findById(courseId);
-        const user = await Users.findOne({username : req.user.username});
+        const user = await Users.findOne({username : req.headers['username']});
         if (user){
             user.purchasedCourses.push(course);
             await user.save();
@@ -74,13 +74,13 @@ router.post('/courses/:courseId', authenticateUser, async (req,res) => {
         }
     }
     catch (error) {
-        res.status(404).json({message: error.message});
+        res.status(404).json({message: "Course doesn't exist"});
     }
 })
 
 //View all purchased course
 router.get('/purchasedCourses', authenticateUser, async (req,res) => {
-    const user = await Users.findOne({username : req.user.username}).populate("purchasedCourses");
+    const user = await Users.findOne({username : req.headers['username']}).populate("purchasedCourses");
     if (user){
         res.json({purchasedCourses: user.purchasedCourses || []});
     } else {

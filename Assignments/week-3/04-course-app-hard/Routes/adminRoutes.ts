@@ -1,5 +1,5 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
+import express from 'express';
+import jwt from 'jsonwebtoken';
 const { authenticateAdmin, secretKeyAdmin } = require('../Authentication/Authentication');
 const { Admins, Courses } =require('../Database/mongooseModels');
 
@@ -48,8 +48,8 @@ router.get('/courses/:courseId', authenticateAdmin, async (req,res) => {
             res.status(403).send("Course not found");
         }
     } 
-    catch (error) {
-        res.status(404).json({message: error.message});
+    catch {
+        res.status(404).json({message: "Course not found"});
 }
 })
 
@@ -62,8 +62,8 @@ router.put('/courses/:courseId', authenticateAdmin, async (req,res) => {
             res.status(403).json({message : "Invalid username or password"});
         }
     } 
-    catch (error) {
-        res.status(404).json({message: error.message});
+    catch {
+        res.status(404).json({message: "Course not found"});
     }
 })
 
@@ -83,7 +83,7 @@ router.delete('/courses/:id', authenticateAdmin, async (req, res) => {
         }
     }
     catch (error) {
-        res.status(404).json({message: error.message});
+        res.status(404).json({message: "Course not found"});
     }
 })
 
