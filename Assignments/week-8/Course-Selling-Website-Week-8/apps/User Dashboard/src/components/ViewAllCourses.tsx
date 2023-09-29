@@ -29,8 +29,9 @@ function ShowCourses() {
             {courses.map(c => <Course title={c.title}
             description={c.description}
             price={c.price}
-            key={c.id}
-            id={c.id}
+            key={c._id}
+            imageLink={c.imageLink}
+            _id={c._id}
             navigate={navigate} />)}  
          </div>
          <div style={{display: "flex", justifyContent: "center", marginTop: 20}}>
@@ -51,7 +52,7 @@ function Course(props: courseComponent) {
         <br />
         <Typography>Price: {props.price.toString()}</Typography>
         <br />
-        <Button variant={'contained'} onClick = {() => {props.navigate(`/courses/${props.id}`)}}>Purchase Course</Button>
+        <Button variant={'contained'} onClick = {() => {console.log(props._id); props.navigate(`/courses/${props._id}`)}}>Purchase Course</Button>
         <br />
     </Card>
 }

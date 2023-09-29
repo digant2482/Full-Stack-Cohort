@@ -4,7 +4,6 @@ import { Typography, Card } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import { courseSchema } from "ui";
 
-
 function ShowCourses() {
     const [courses, setCourses] = React.useState<courseSchema[]>([]);
     const authKey = localStorage.getItem("Auth-Key-User");
@@ -13,9 +12,8 @@ function ShowCourses() {
 
     React.useEffect(() => {
         axios.get("http://localhost:3000/users/purchasedCourses", {headers : { token : token }}).then((response) => {
-        console.log(response.data)
         if (response.status === 200)
-            setCourses(response.data);
+            setCourses(response.data.purchasedCourses);
         else 
             navigate("/login");
     })}, []);
@@ -26,7 +24,8 @@ function ShowCourses() {
             {courses.map(c => <Course title={c.title}
             description={c.description}
             price={c.price}
-            id={c.id} />)}
+            imageLink={c.imageLink}
+            _id={c._id} />)}
     </div>
 }
 

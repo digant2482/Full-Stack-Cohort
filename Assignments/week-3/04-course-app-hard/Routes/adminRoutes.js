@@ -1,0 +1,90 @@
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const { authenticateAdmin, secretKeyAdmin } = require('../Authentication/Authentication');
+const { Admins, Courses } =require('../Database/mongooseModels');
+
+const router = express.Router();
+
+router.post('/signup', async (req,res) => {
+    const { username, password } = req.body;
+    const admin = await Admins.findOne({ username });
+    if (admin){
+        res.status(403).send("Username is taken, please try another username");
+        return;
+    }
+
+    const newAdmin = new Admins({username, password});
+    await newAdmin.save();
+
+    //Send authorization token
+    const token = jwt.sign({username, role: 'admin'}, secretKeyAdmin, {expiresIn : '1h'});
+    res.send({message : "Admin created successfully", token});
+})
+
+router.post('/login', async (req,res) => {
+    const {username, password} = req.headers;
+    const admin = await Admins.findOne({username, password});
+    if (!admin){
+        res.status(403).json({ message : 'Admin authentication failed'});
+        return;
+    }
+    const token = jwt.sign({username}, secretKeyAdmin, { expiresIn: '1h'});
+    res.send({message : "Logged in successfully", token});
+})
+
+router.post('/courses', authenticateAdmin, async (req,res) => {
+    const newCourse = new Courses(req.body);
+    await newCourse.save();
+    res.send({message : "Course created successfully", courseId : newCourse.id});
+})
+
+router.get('/courses/:courseId', authenticateAdmin, async (req,res) => {
+    const courseId = req.params.courseId;
+    try {
+        const course = await Courses.findById(courseId);
+        if (course){
+            res.json(course);
+        } else {
+            res.status(403).send("Course not found");
+        }
+    } 
+    catch (error) {
+        res.status(404).json({message: error.message});
+}
+})
+
+router.put('/courses/:courseId', authenticateAdmin, async (req,res) => {
+    try{
+        const course = await Courses.findByIdAndUpdate(req.params.courseId, req.body);
+        if (course){
+            res.json({message : "Course updated successfully"});
+        } else {
+            res.status(403).json({message : "Invalid username or password"});
+        }
+    } 
+    catch (error) {
+        res.status(404).json({message: error.message});
+    }
+})
+
+router.get('/courses', authenticateAdmin, async (req,res) => {
+    const courses = await Courses.find({});
+    res.json({courses});
+})
+
+router.delete('/courses/:id', authenticateAdmin, async (req, res) => {
+    const courseId = req.params.id;
+    try{
+        const course = await Courses.findByIdAndDelete(courseId);
+        if (course){
+            res.send({message: "Successfully deleted the course"});
+        } else {
+            res.status(404).send({message: "Course not found"});
+        }
+    }
+    catch (error) {
+        res.status(404).json({message: error.message});
+    }
+})
+
+module.exports = router;

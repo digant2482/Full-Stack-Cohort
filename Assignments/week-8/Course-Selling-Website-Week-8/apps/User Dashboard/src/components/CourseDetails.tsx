@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { useParams,useNavigate } from "react-router-dom";
-import { Card, Typography } from "@mui/material";
+import { Card, Typography, Button } from "@mui/material";
 import { courseSchema } from "ui";
 
 function CourseDetails () {
@@ -30,13 +30,23 @@ function CourseDetails () {
 
     return  <div>
         {course &&
-        <Card>
-            <Typography>{course.title}</Typography>
-            <Typography>{course.description}</Typography>
-            <Typography>{course.price}</Typography>
-            <button onClick={purchaseCourse}>Purchase course</button>
-            <br />
-        </Card>
+        <div style={{width:300, display: "flex", justifyContent:"center"}}>
+            <Card style={{width: "100%"}}>
+                <Typography style={{display:"flex", justifyContent:"center"}}>{course.title}</Typography>
+                <br />
+                <div style={{display:"flex", justifyContent:"center", height: 90}}>
+                <img style={{display:"flex", justifyContent:"center", height: 90}} src={"https://www.interviewbit.com/blog/wp-content/uploads/2022/05/FULL-STACK-1.png"} alt="Course Image"/>
+                </div>
+                <br />
+                <Typography style={{display:"flex", justifyContent:"center"}}>{course.description}</Typography>
+                <br />
+                <Typography style={{display:"flex", justifyContent:"center"}}>₹ {course.price}</Typography>
+                <br />
+                <div style={{display:"flex", justifyContent:"center"}}>
+                    <Button size={"small"} variant={"contained"} onClick={purchaseCourse}>Purchase course</Button>
+                </div>
+            </Card>
+        </div>
         }
     </div>
 }

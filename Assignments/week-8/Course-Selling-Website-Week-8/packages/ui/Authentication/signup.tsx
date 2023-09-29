@@ -23,20 +23,8 @@ export function Signup(prop: propType) {
             });          
     }
 
-    return <div>
-        <div style={{
-            display: "flex",
-            justifyContent: "center"
-        }}>
-            <Typography variant = {"h6"} style = {{marginTop: 150, marginBottom: 10, justifyContent: "center"}}>   
-                Welcome to Coursera, Signup
-            </Typography>
-        </div>
-        <div style={{
-            display: "flex",
-            justifyContent: "center"
-        }}>
-        <Card variant={"outlined"} style = {{width: 400, padding: 20}}>
+    return (    
+        <Card variant={"outlined"} style = {{width: 350, padding: 20}}>
             <TextField
                 fullWidth={true}
                 id="outlined-basic" 
@@ -64,6 +52,5 @@ export function Signup(prop: propType) {
                 {errorMessage}
             </Typography>}
         </Card>
-        </div>
-    </div>
+    )
 }
