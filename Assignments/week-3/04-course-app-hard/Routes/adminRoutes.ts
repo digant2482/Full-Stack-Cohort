@@ -1,11 +1,20 @@
-import express from 'express';
+import express, { response } from 'express';
 import jwt from 'jsonwebtoken';
-const { authenticateAdmin, secretKeyAdmin } = require('../Authentication/Authentication');
-const { Admins, Courses } =require('../Database/mongooseModels');
+const { authenticateAdmin, secretKeyAdmin, validateAuthInputs } = require('../Authentication/Authentication');
+const { Admins, Courses } = require('../Database/mongooseModels');
+import { z } from 'zod';
 
 const router = express.Router();
 
-router.post('/signup', async (req,res) => {
+const validateCourseInputs = z.object({
+    title: z.string().max(20),
+    description: z.string().max(100),
+    price: z.string().max(8),
+    published: z.boolean(),
+    imageLink: z.string().max(1000)
+})
+
+router.post('/signup', validateAuthInputs, async (req,res) => {
     const { username, password } = req.body;
     const admin = await Admins.findOne({ username });
     if (admin){
@@ -21,7 +30,7 @@ router.post('/signup', async (req,res) => {
     res.send({message : "Admin created successfully", token});
 })
 
-router.post('/login', async (req,res) => {
+router.post('/login', validateAuthInputs, async (req,res) => {
     const {username, password} = req.headers;
     const admin = await Admins.findOne({username, password});
     if (!admin){
@@ -33,9 +42,14 @@ router.post('/login', async (req,res) => {
 })
 
 router.post('/courses', authenticateAdmin, async (req,res) => {
-    const newCourse = new Courses(req.body);
-    await newCourse.save();
-    res.send({message : "Course created successfully", courseId : newCourse.id});
+    const parsedCourseInput = validateCourseInputs.safeParse(req.body);
+    if (parsedCourseInput.success){
+        const newCourse = new Courses(req.body);
+        await newCourse.save();
+        res.send({message : "Course created successfully", courseId : newCourse.id});
+    } else {
+        res.status(403).send({message: parsedCourseInput.error});
+    }
 })
 
 router.get('/courses/:courseId', authenticateAdmin, async (req,res) => {
@@ -54,16 +68,21 @@ router.get('/courses/:courseId', authenticateAdmin, async (req,res) => {
 })
 
 router.put('/courses/:courseId', authenticateAdmin, async (req,res) => {
-    try{
-        const course = await Courses.findByIdAndUpdate(req.params.courseId, req.body);
-        if (course){
-            res.json({message : "Course updated successfully"});
-        } else {
-            res.status(403).json({message : "Invalid username or password"});
+    const parsedCourseInput = validateCourseInputs.safeParse(req.body);
+    if (parsedCourseInput.success){
+        try{
+            const course = await Courses.findByIdAndUpdate(req.params.courseId, req.body);
+            if (course){
+                res.json({message : "Course updated successfully"});
+            } else {
+                res.status(403).json({message : "Invalid username or password"});
+            }
+        } 
+        catch {
+            res.status(404).json({message: "Course not found"});
         }
-    } 
-    catch {
-        res.status(404).json({message: "Course not found"});
+    } else {
+        res.status(403).send({message: parsedCourseInput.error});
     }
 })
 

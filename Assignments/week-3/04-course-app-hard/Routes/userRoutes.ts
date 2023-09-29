@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
-const { authenticateUser, secretKeyUser } = require("../Authentication/Authentication");
-const { Users, Courses } = require("../Database/mongooseModels");
 import express from 'express';
+const { authenticateUser, secretKeyUser, validateAuthInputs } = require("../Authentication/Authentication");
+const { Users, Courses } = require("../Database/mongooseModels");
 
 const router = express.Router();
 
-router.post('/signup', async (req,res) => {
+router.post('/signup', validateAuthInputs, async (req,res) => {
     const { username, password } = req.body;
     const user = await Users.findOne({ username });
     if (user){
@@ -21,7 +21,7 @@ router.post('/signup', async (req,res) => {
     res.send({message : "User created successfully", token});
 })
 
-router.post('/login', async (req,res) => {
+router.post('/login', validateAuthInputs, async (req,res) => {
     const {username, password} = req.headers;
     const user = await Users.findOne({username, password});
     if (!user){

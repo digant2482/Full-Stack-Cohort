@@ -1,8 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require('jsonwebtoken');
+const zod_1 = require("zod");
 const secretKeyAdmin = "adminS3CR3T";
 const secretKeyUser = "userS3CR3T";
+const authSchema = zod_1.z.object({
+    username: zod_1.z.string().email(),
+    password: zod_1.z.string()
+});
+function validateAuthInputs(req, res, next) {
+    const parsedInputs = authSchema.safeParse(req.headers);
+    if (!parsedInputs.success) {
+        res.status(403).send({ message: parsedInputs.error });
+        return;
+    }
+    next();
+}
 function authenticateAdmin(req, res, next) {
     try {
         if (typeof req.headers.token === 'string') {
@@ -30,5 +43,5 @@ function authenticateUser(req, res, next) {
     }
 }
 module.exports = {
-    secretKeyAdmin, secretKeyUser, authenticateAdmin, authenticateUser
+    secretKeyAdmin, secretKeyUser, authenticateAdmin, authenticateUser, validateAuthInputs
 };

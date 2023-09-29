@@ -14,10 +14,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const { authenticateAdmin, secretKeyAdmin } = require('../Authentication/Authentication');
+const { authenticateAdmin, secretKeyAdmin, validateAuthInputs } = require('../Authentication/Authentication');
 const { Admins, Courses } = require('../Database/mongooseModels');
+const zod_1 = require("zod");
 const router = express_1.default.Router();
-router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const validateCourseInputs = zod_1.z.object({
+    title: zod_1.z.string().max(20),
+    description: zod_1.z.string().max(100),
+    price: zod_1.z.string().max(8),
+    published: zod_1.z.boolean(),
+    imageLink: zod_1.z.string().max(1000)
+});
+router.post('/signup', validateAuthInputs, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     const admin = yield Admins.findOne({ username });
     if (admin) {
@@ -30,7 +38,7 @@ router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function*
     const token = jsonwebtoken_1.default.sign({ username, role: 'admin' }, secretKeyAdmin, { expiresIn: '1h' });
     res.send({ message: "Admin created successfully", token });
 }));
-router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/login', validateAuthInputs, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.headers;
     const admin = yield Admins.findOne({ username, password });
     if (!admin) {
@@ -41,9 +49,15 @@ router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     res.send({ message: "Logged in successfully", token });
 }));
 router.post('/courses', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const newCourse = new Courses(req.body);
-    yield newCourse.save();
-    res.send({ message: "Course created successfully", courseId: newCourse.id });
+    const parsedCourseInput = validateCourseInputs.safeParse(req.body);
+    if (parsedCourseInput.success) {
+        const newCourse = new Courses(req.body);
+        yield newCourse.save();
+        res.send({ message: "Course created successfully", courseId: newCourse.id });
+    }
+    else {
+        res.status(403).send({ message: parsedCourseInput.error });
+    }
 }));
 router.get('/courses/:courseId', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const courseId = req.params.courseId;
@@ -61,17 +75,23 @@ router.get('/courses/:courseId', authenticateAdmin, (req, res) => __awaiter(void
     }
 }));
 router.put('/courses/:courseId', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const course = yield Courses.findByIdAndUpdate(req.params.courseId, req.body);
-        if (course) {
-            res.json({ message: "Course updated successfully" });
+    const parsedCourseInput = validateCourseInputs.safeParse(req.body);
+    if (parsedCourseInput.success) {
+        try {
+            const course = yield Courses.findByIdAndUpdate(req.params.courseId, req.body);
+            if (course) {
+                res.json({ message: "Course updated successfully" });
+            }
+            else {
+                res.status(403).json({ message: "Invalid username or password" });
+            }
         }
-        else {
-            res.status(403).json({ message: "Invalid username or password" });
+        catch (_b) {
+            res.status(404).json({ message: "Course not found" });
         }
     }
-    catch (_b) {
-        res.status(404).json({ message: "Course not found" });
+    else {
+        res.status(403).send({ message: parsedCourseInput.error });
     }
 }));
 router.get('/courses', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -13,11 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const { authenticateUser, secretKeyUser } = require("../Authentication/Authentication");
-const { Users, Courses } = require("../Database/mongooseModels");
 const express_1 = __importDefault(require("express"));
+const { authenticateUser, secretKeyUser, validateAuthInputs } = require("../Authentication/Authentication");
+const { Users, Courses } = require("../Database/mongooseModels");
 const router = express_1.default.Router();
-router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/signup', validateAuthInputs, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     const user = yield Users.findOne({ username });
     if (user) {
@@ -30,7 +30,7 @@ router.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function*
     const token = jsonwebtoken_1.default.sign({ username, role: 'user' }, secretKeyUser, { expiresIn: '1h' });
     res.send({ message: "User created successfully", token });
 }));
-router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/login', validateAuthInputs, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.headers;
     const user = yield Users.findOne({ username, password });
     if (!user) {

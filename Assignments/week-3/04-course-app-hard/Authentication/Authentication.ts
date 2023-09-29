@@ -1,9 +1,24 @@
 import { Request, Response, NextFunction } from "express";
-
 const jwt = require('jsonwebtoken');
+import { z } from 'zod';
 
 const secretKeyAdmin = "adminS3CR3T";
 const secretKeyUser = "userS3CR3T";
+
+const authSchema = z.object({
+    username: z.string().email(),
+    password: z.string()
+
+})
+
+function validateAuthInputs(req: Request, res: Response, next: NextFunction){
+    const parsedInputs = authSchema.safeParse(req.headers);
+    if (!parsedInputs.success){
+        res.status(403).send({message: parsedInputs.error});
+        return;
+    }
+    next();
+}
 
 function authenticateAdmin(req: Request, res: Response, next: NextFunction){
     try {
@@ -34,5 +49,5 @@ function authenticateUser(req: Request, res: Response, next: NextFunction){
 }
 
 module.exports = {
-    secretKeyAdmin, secretKeyUser, authenticateAdmin, authenticateUser
+    secretKeyAdmin, secretKeyUser, authenticateAdmin, authenticateUser, validateAuthInputs
 }
