@@ -13,7 +13,7 @@ export function Signup(prop: propType) {
 
     const signupRequest = () => {
         let body = { username : email, password };
-        axios.post(prop.backendUrl, body).then((response) => {
+        axios.post(prop.backendUrl, null, {headers: body}).then((response) => {
             if (response.status === 200) 
                 navigate("/Login");
             })

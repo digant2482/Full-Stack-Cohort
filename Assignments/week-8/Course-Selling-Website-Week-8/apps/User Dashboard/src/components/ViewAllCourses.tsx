@@ -4,15 +4,18 @@ import { NavigateFunction, useNavigate } from "react-router-dom";
 import { Button, Typography, Card} from '@mui/material';
 import { courseSchema } from "ui";
 
+interface courseSchemaWithId extends courseSchema {
+    _id: string;
+}
+
 function ShowCourses() {
-    const [courses, setCourses] = React.useState<courseSchema[]>([]);
+    const [courses, setCourses] = React.useState<courseSchemaWithId[]>([]);
     const authKey = localStorage.getItem("Auth-Key-User");
     const token = "Bearer " + authKey;
     const navigate = useNavigate();
 
     React.useEffect(() => {
         axios.get("http://localhost:3000/users/courses", {headers : { token }}).then((response) => {
-            console.log(response.data);
             if (response.status === 200)
                 setCourses(response.data);
             else 
@@ -31,6 +34,7 @@ function ShowCourses() {
             price={c.price}
             key={c._id}
             imageLink={c.imageLink}
+            published={c.published}
             _id={c._id}
             navigate={navigate} />)}  
          </div>
@@ -40,7 +44,7 @@ function ShowCourses() {
     </div>
 }
 
-interface courseComponent extends courseSchema {
+interface courseComponent extends courseSchemaWithId {
     navigate: NavigateFunction;
 }
 
@@ -52,7 +56,7 @@ function Course(props: courseComponent) {
         <br />
         <Typography>Price: {props.price.toString()}</Typography>
         <br />
-        <Button variant={'contained'} onClick = {() => {console.log(props._id); props.navigate(`/courses/${props._id}`)}}>Purchase Course</Button>
+        <Button variant={'contained'} onClick = {() => {props.navigate(`/courses/${props._id}`)}}>Purchase Course</Button>
         <br />
     </Card>
 }

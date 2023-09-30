@@ -14,8 +14,14 @@ const validateCourseInputs = z.object({
     imageLink: z.string().max(1000)
 })
 
+//Check login
+router.get('/me', authenticateAdmin, async (req,res) => {
+     res.json({username: req.headers['username']});
+})
+
+
 router.post('/signup', validateAuthInputs, async (req,res) => {
-    const { username, password } = req.body;
+    const { username, password } = req.headers;
     const admin = await Admins.findOne({ username });
     if (admin){
         res.status(403).send("Username is taken, please try another username");
@@ -46,6 +52,12 @@ router.post('/courses', authenticateAdmin, async (req,res) => {
     if (parsedCourseInput.success){
         const newCourse = new Courses(req.body);
         await newCourse.save();
+
+        //Add courses to admin's course section
+        const admin = await Admins.findOne({username : req.headers['username']});
+        admin.courses.push(newCourse);
+        await admin.save();
+
         res.send({message : "Course created successfully", courseId : newCourse.id});
     } else {
         res.status(403).send({message: parsedCourseInput.error});
@@ -87,8 +99,9 @@ router.put('/courses/:courseId', authenticateAdmin, async (req,res) => {
 })
 
 router.get('/courses', authenticateAdmin, async (req,res) => {
-    const courses = await Courses.find({});
-    res.json({courses});
+    const admin = await Admins.findOne({username: req.headers['username']}).populate("courses");
+    res.json(admin.courses);
+   
 })
 
 router.delete('/courses/:id', authenticateAdmin, async (req, res) => {

@@ -25,8 +25,12 @@ const validateCourseInputs = zod_1.z.object({
     published: zod_1.z.boolean(),
     imageLink: zod_1.z.string().max(1000)
 });
+//Check login
+router.get('/me', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.json({ username: req.headers['username'] });
+}));
 router.post('/signup', validateAuthInputs, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, password } = req.body;
+    const { username, password } = req.headers;
     const admin = yield Admins.findOne({ username });
     if (admin) {
         res.status(403).send("Username is taken, please try another username");
@@ -53,6 +57,10 @@ router.post('/courses', authenticateAdmin, (req, res) => __awaiter(void 0, void 
     if (parsedCourseInput.success) {
         const newCourse = new Courses(req.body);
         yield newCourse.save();
+        //Add courses to admin's course section
+        const admin = yield Admins.findOne({ username: req.headers['username'] });
+        admin.courses.push(newCourse);
+        yield admin.save();
         res.send({ message: "Course created successfully", courseId: newCourse.id });
     }
     else {
@@ -95,8 +103,8 @@ router.put('/courses/:courseId', authenticateAdmin, (req, res) => __awaiter(void
     }
 }));
 router.get('/courses', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const courses = yield Courses.find({});
-    res.json({ courses });
+    const admin = yield Admins.findOne({ username: req.headers['username'] }).populate("courses");
+    res.json(admin.courses);
 }));
 router.delete('/courses/:id', authenticateAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const courseId = req.params.id;

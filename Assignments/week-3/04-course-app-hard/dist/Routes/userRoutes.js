@@ -18,7 +18,7 @@ const { authenticateUser, secretKeyUser, validateAuthInputs } = require("../Auth
 const { Users, Courses } = require("../Database/mongooseModels");
 const router = express_1.default.Router();
 router.post('/signup', validateAuthInputs, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, password } = req.body;
+    const { username, password } = req.headers;
     const user = yield Users.findOne({ username });
     if (user) {
         res.status(403).send("Username is taken, please try another username");

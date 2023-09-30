@@ -1,35 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Landing from './components/Landing';
+import AdminLogin from './components/Login';
+import Register from './components/Register';
+import CreateCourse from './components/CreateCourse';
+import ViewAllCourses from './components/ViewAllCourses';
+import UpdateCourse from './components/UpdateCourse';
+import Appbar from './Appbar';
 import './App.css'
+import { RecoilRoot, useSetRecoilState } from 'recoil';
+import { userState } from "./store/atoms/user";
+import axios from 'axios';
+import { useEffect } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "#eeeeee"
+    }}>
+    <RecoilRoot>
+      <Router>
+        <Appbar/>
+        <InitUser/>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<AdminLogin />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/createcourse" element={<CreateCourse />} />
+          <Route path="/courses/" element={<ViewAllCourses />} />
+          <Route path="/courses/:courseId" element={<UpdateCourse />} />
+        </Routes>
+      </Router>
+      </RecoilRoot>
+    </div>
+  );
+}
+
+function InitUser(){
+  const setUser = useSetRecoilState(userState);
+  const init = async ()=>{
+    try{
+      const token = "Bearer " + localStorage.getItem("Auth-Key");
+      const response = await axios.get('http://localhost:3000/admin/me', {headers: { token }});
+
+      if (response.data.username){
+        setUser({
+          isLoading: false,
+          userEmail: response.data.username
+        });
+      } else {
+        setUser({
+          isLoading: false,
+          userEmail: ""
+        });
+      }  
+    }
+    catch {
+      setUser({
+        isLoading: false,
+        userEmail: ""
+      });
+    }
+  }  
+  useEffect(()=>{
+    init();
+  },[])
+  return <></>
 }
 
 export default App

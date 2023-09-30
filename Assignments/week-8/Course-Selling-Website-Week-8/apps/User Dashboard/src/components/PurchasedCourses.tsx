@@ -25,7 +25,8 @@ function ShowCourses() {
             description={c.description}
             price={c.price}
             imageLink={c.imageLink}
-            _id={c._id} />)}
+            published={c.published}
+            />)}
     </div>
 }
 

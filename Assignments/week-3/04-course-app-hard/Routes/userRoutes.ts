@@ -6,7 +6,7 @@ const { Users, Courses } = require("../Database/mongooseModels");
 const router = express.Router();
 
 router.post('/signup', validateAuthInputs, async (req,res) => {
-    const { username, password } = req.body;
+    const { username, password } = req.headers;
     const user = await Users.findOne({ username });
     if (user){
         res.status(403).send("Username is taken, please try another username");

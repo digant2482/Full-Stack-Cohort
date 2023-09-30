@@ -3,5 +3,5 @@ export type courseSchema = {
     description: string,
     price: string,
     imageLink: string,
-    _id: string
+    published: boolean,
 } 
