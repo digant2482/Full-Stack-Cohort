@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import { Card, Typography, Button, TextField, Grid } from "@mui/material";
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { courseTitleState } from 'store';
@@ -36,7 +36,7 @@ function UpdateCard(){
 
     const authKey = localStorage.getItem("Auth-Key");
     const token = "Bearer " + authKey;
-    const navigate = useNavigate();
+    const router = useRouter();
 
     React.useEffect(()=>{
         setTitle("");
@@ -53,9 +53,9 @@ function UpdateCard(){
             published
         }
 
-        const response = await axios.post("http://localhost:3000/admin/courses/", body, {headers : { token }});
+        const response = await axios.post("/api/courses", body, {headers : { token }});
         if (response.status === 200) {
-            navigate('/courses');
+            router.push('/courses');
         } else {
             setErrorText('Unauthorised access');
         }

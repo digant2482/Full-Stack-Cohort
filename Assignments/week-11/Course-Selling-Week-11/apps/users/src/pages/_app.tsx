@@ -7,7 +7,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
   <RecoilRoot>
     <Appbar/>
-    <InitUser backendUrl={"http://localhost:3000/users/me"}/>
+    <InitUser backendUrl={"http://localhost:3000/api/auth/me"}/>
     <Component {...pageProps} />
   </RecoilRoot>
   )

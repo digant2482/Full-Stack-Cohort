@@ -1,4 +1,4 @@
-import express, { response } from 'express';
+import express from 'express';
 import jwt from 'jsonwebtoken';
 const { authenticateAdmin, secretKeyAdmin, validateAuthInputs } = require('../Authentication/Authentication');
 const { Admins, Courses } = require('../Database/mongooseModels');

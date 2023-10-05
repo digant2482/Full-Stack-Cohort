@@ -4,14 +4,14 @@ import { Typography, Card } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import { courseSchema } from "ui";
 
-function ShowCourses() {
+function PurchasedCourses() {
     const [courses, setCourses] = React.useState<courseSchema[]>([]);
     const authKey = localStorage.getItem("Auth-Key-User");
     const token = "Bearer " + authKey;
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        axios.get("http://localhost:3000/users/purchasedCourses", {headers : { token : token }}).then((response) => {
+        axios.get("http://localhost:3000/api/courses/purchasedCourses", {headers : { token : token }}).then((response) => {
         if (response.status === 200)
             setCourses(response.data.purchasedCourses);
         else 
@@ -39,4 +39,4 @@ function Course(props: courseSchema) {
 </div>
 }
 
-export default ShowCourses;
+export default PurchasedCourses;
