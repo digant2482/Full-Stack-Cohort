@@ -11,15 +11,17 @@ export function InitUser(prop: propType){
     const setUser = useSetRecoilState(userState);
 
     //Get token
-    if (prop.backendUrl.includes("user")){
-        var token = localStorage.getItem("Auth-Key-User");
-    } else {
-        var token = localStorage.getItem("Auth-Key");
-    }
+    const getToken = () => {
+      if (prop.backendUrl.includes("user")){
+          return localStorage.getItem("Auth-Key-User");
+      } else {
+          return localStorage.getItem("Auth-Key");
+      }
+    } 
     
     const init = async ()=>{
       try{
-        const response = await axios.get(prop.backendUrl, {headers: { token }});
+        const response = await axios.get(prop.backendUrl.slice(5), {headers: { token: getToken() }});
   
         if (response.data.username){
           setUser({

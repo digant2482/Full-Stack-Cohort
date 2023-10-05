@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { NavigateFunction, useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import { Button, Typography, Card} from '@mui/material';
 import { courseSchema } from "ui";
 
@@ -12,14 +12,14 @@ function ShowCourses() {
     const [courses, setCourses] = React.useState<courseSchemaWithId[]>([]);
     const authKey = localStorage.getItem("Auth-Key-User");
     const token = "Bearer " + authKey;
-    const navigate = useNavigate();
+    const router = useRouter();
 
     React.useEffect(() => {
-        axios.get("http://localhost:3000/users/courses", {headers : { token }}).then((response) => {
+        axios.get("http://localhost:3000/api/courses", {headers : { token }}).then((response) => {
             if (response.status === 200)
                 setCourses(response.data);
             else 
-                navigate("/login");
+                router.push("/login");
     })}, []);
   
     return <div>
@@ -36,19 +36,16 @@ function ShowCourses() {
             imageLink={c.imageLink}
             published={c.published}
             _id={c._id}
-            navigate={navigate} />)}  
+            />)}  
          </div>
          <div style={{display: "flex", justifyContent: "center", marginTop: 20}}>
-            <Button variant={'contained'} onClick={()=>{navigate('/purchasedcourses')}}>View my purchases</Button>   
+            <Button variant={'contained'} onClick={()=>{router.push('/purchasedcourses')}}>View my purchases</Button>   
          </div>   
     </div>
 }
 
-interface courseComponent extends courseSchemaWithId {
-    navigate: NavigateFunction;
-}
-
-function Course(props: courseComponent) {
+function Course(props: courseSchemaWithId) {
+    const router = useRouter();
     return <Card variant={"outlined"} style = {{width: 300, padding: 20}}>
         <Typography>Title: {props.title}</Typography>
         <br />  
@@ -56,7 +53,7 @@ function Course(props: courseComponent) {
         <br />
         <Typography>Price: {props.price.toString()}</Typography>
         <br />
-        <Button variant={'contained'} onClick = {() => {props.navigate(`/courses/${props._id}`)}}>Purchase Course</Button>
+        <Button variant={'contained'} onClick = {() => {router.push(`/courses/${props._id}`)}}>Purchase Course</Button>
         <br />
     </Card>
 }

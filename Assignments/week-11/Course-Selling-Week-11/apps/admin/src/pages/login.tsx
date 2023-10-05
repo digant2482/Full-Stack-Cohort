@@ -20,7 +20,7 @@ export default function UserLogin() {
             display: "flex",
             justifyContent: "center"
         }}>
-            <Login backendUrl={"http://localhost:3000/admin/login"} setUserState={setUserState}/>
+            <Login backendUrl={"http://localhost:3000/api/auth/login"} setUserState={setUserState}/>
         </div>
 </div>)
 }

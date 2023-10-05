@@ -12,7 +12,7 @@ function CourseDetails () {
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        axios.get("http://localhost:3000/users/courses/" + courseId, {headers:{token}}).then((response) => {
+        axios.get("http://localhost:3000/api/courses/" + courseId, {headers:{token}}).then((response) => {
         if (response.status === 200){
             setCourse(response.data);
         }
@@ -21,7 +21,7 @@ function CourseDetails () {
     }, [])
 
     const purchaseCourse = () => {
-        axios.post("http://localhost:3000/users/courses/" + courseId, null, {headers : { token }}).then((response) => {
+        axios.post("http://localhost:3000/api/courses/" + courseId, null, {headers : { token }}).then((response) => {
             if (response.status === 200){
                 navigate("/courses");
             }

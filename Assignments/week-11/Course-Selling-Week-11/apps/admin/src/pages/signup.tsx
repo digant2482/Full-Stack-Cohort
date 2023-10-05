@@ -23,7 +23,7 @@ function Register() {
                     justifyContent: "left",
                     marginLeft: 100
                 }}>
-                    <Signup backendUrl={"http://localhost:3000/admin/signup"}/>
+                    <Signup backendUrl={"http://localhost:3000/api/auth/signup"}/>
                 </div>
             </Grid>
             <Grid item lg={6} md={6} sm={12}>
