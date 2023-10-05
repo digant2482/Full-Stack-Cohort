@@ -1,16 +1,13 @@
 import { Grid, Button } from '@mui/material';
-import { useRecoilValue } from 'recoil';
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 
 export default function Home() {
   return (
     <div>
         <Grid container style={{padding: "5vw"}}>
             <Grid item lg={6} md={6} xs={12}>
-                <div style={{marginTop: 160, paddingLeft: 20,zIndex:1, position: "relative"}}>
+                <div style={{marginTop: 110,zIndex:1, position: "relative"}}>
                     <div style={{
                         marginBottom: 10,
                         display: 'flex',
@@ -18,12 +15,20 @@ export default function Home() {
                         zIndex:1
                     }}>
                         <h1>Welcome to Coursera</h1>
+                        
                     </div>
-                        <Buttons/>
+                    <div style={{
+                        marginBottom: 10,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        zIndex:1
+                    }}>
+                        <Buttons/> 
                     </div>
+                </div>
             </Grid>
             <Grid item lg={6} md={6} sm={12}>
-                <div style={{marginTop: 50, marginRight:30, zIndex:0, display: "flex", justifyContent: "right"}}>
+                <div style={{marginTop: 0, marginRight:10, zIndex:0, display: "flex", justifyContent: "right"}}>
                     <img height={400} src="https://graduate.northeastern.edu/resources/wp-content/uploads/sites/4/2019/09/iStock-1150384596-2.jpg" alt="" />
                 </div>
             </Grid>
