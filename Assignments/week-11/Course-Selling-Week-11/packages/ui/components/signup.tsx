@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import {Button, TextField, Card, Typography} from '@mui/material';
 
 type propType = {backendUrl:string};
@@ -9,17 +9,16 @@ export function Signup(prop: propType) {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState(""); // State for error message
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const signupRequest = () => {
         let body = { username : email, password };
         axios.post(prop.backendUrl, null, {headers: body}).then((response) => {
             if (response.status === 200) 
-                navigate("/Login");
+                router.push("/Login");
             })
             .catch((error) => {
                 setErrorMessage(error.response.data.message);
-                console.log(errorMessage)
             });          
     }
 

@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import {Button, TextField, Card, Typography} from '@mui/material';
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import { SetterOrUpdater } from "recoil"
 
 type userState = {
@@ -14,7 +14,7 @@ export function Login(prop: propType) {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState("");
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const sendLoginRequest = () => {
         axios.post(prop.backendUrl, null, { headers : {username : email, password}})
@@ -29,7 +29,7 @@ export function Login(prop: propType) {
                     isLoading: false,
                     userEmail: email
                 })
-                navigate('/courses');
+                router.push('/courses');
             }})
             .catch((error) => {
                 setErrorMessage(error.response.data.message);
