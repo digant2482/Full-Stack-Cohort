@@ -20,5 +20,5 @@ export default async function handler (
         return;
     }
     const token = jwt.sign({username}, secretKeyUser, { expiresIn: '1h'});
-    res.send({message : "Logged in successfully", token});
+    res.send({message : "User logged in successfully", token});
 }

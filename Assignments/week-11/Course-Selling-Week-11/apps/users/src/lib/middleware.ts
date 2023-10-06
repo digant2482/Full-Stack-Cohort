@@ -2,13 +2,18 @@ import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 import { z } from 'zod';
 
-
 export const secretKeyUser = "userS3CR3T";
 
-export const getUser = (token: string, cb:(user: JwtPayload | string)=>void) => {
+export type decryptedUserType = {
+    username?: string,
+    iat?: number,
+    exp?: number
+}
+
+export const getUser = (token: string, cb:(user: decryptedUserType)=>void) => {
     jwt.verify(token, secretKeyUser, (err, user) => {
         if (err) {
-            return cb("");
+            return cb({});
         }
         if (user)
             return cb(user);

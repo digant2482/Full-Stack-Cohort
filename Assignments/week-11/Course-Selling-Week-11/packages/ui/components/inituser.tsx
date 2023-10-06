@@ -21,7 +21,7 @@ export function InitUser(prop: propType){
     
     const init = async ()=>{
       try{
-        const response = await axios.get(prop.backendUrl.slice(5), {headers: { token: getToken() }});
+        const response = await axios.get(prop.backendUrl.slice(5), {headers: { token: "Bearer " + getToken() }});
   
         if (response.data.username){
           setUser({

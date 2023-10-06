@@ -20,7 +20,7 @@ export function Login(prop: propType) {
         axios.post(prop.backendUrl, null, { headers : {username : email, password}})
             .then((response) => {
             if (response.status === 200){
-                if (prop.backendUrl.includes("user")){
+                if (response.data.message.includes("User")){
                     localStorage.setItem("Auth-Key-User", response.data.token);
                 } else {
                     localStorage.setItem("Auth-Key", response.data.token);

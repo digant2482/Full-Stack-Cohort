@@ -1,14 +1,19 @@
 import React from "react";
 import axios from "axios";
-import { useParams,useNavigate } from "react-router-dom";
 import { Card, Typography, Button, TextField, Grid } from "@mui/material";
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { courseTitleState } from 'store';
 import { coursePriceState } from 'store';
 import { courseImageLinkState } from 'store';
+import { useRouter } from "next/router";
 
 function UpdateCourse () {
-    const {courseId} = useParams();
+    const router = useRouter();
+    if (typeof router.query.courseId === "string"){
+        var courseId = router.query.courseId;
+    } else {
+        return;
+    }
 
     return  (
         <div> 
@@ -42,10 +47,10 @@ function UpdateCard(props: updateCardPropsType){
 
     const authKey = localStorage.getItem("Auth-Key");
     const token = "Bearer " + authKey;
-    const navigate = useNavigate();
+    const router = useRouter();
     
     React.useEffect(()=>{
-        axios.get('http://localhost:3000/admin/courses/' + props.courseId, {headers: { token }})
+        axios.get('http://localhost:3000/api/courses/fetch/' + props.courseId, {headers: { token }})
         .then((response)=>{
             if (response.status === 200){
                 setTitle(response.data.title);
@@ -66,9 +71,9 @@ function UpdateCard(props: updateCardPropsType){
             published
         }
 
-        const response = await axios.put("http://localhost:3000/admin/courses/" + props.courseId, body, {headers : { token }});
+        const response = await axios.put("http://localhost:3000/api/courses/edit/" + props.courseId, body, {headers : { token }});
         if (response.status === 200) {
-            navigate('/courses');
+            router.push('/courses');
         } else {
             setErrorText('Unauthorised access');
         }

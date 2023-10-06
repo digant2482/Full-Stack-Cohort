@@ -10,12 +10,12 @@ interface courseSchemaWithId extends courseSchema {
 
 function ShowCourses() {
     const [courses, setCourses] = React.useState<courseSchemaWithId[]>([]);
-    const authKey = localStorage.getItem("Auth-Key-User");
-    const token = "Bearer " + authKey;
     const router = useRouter();
 
     React.useEffect(() => {
-        axios.get("http://localhost:3000/api/courses", {headers : { token }}).then((response) => {
+        const authKey = localStorage.getItem("Auth-Key-User");
+        const token = "Bearer " + authKey;
+        axios.get("http://localhost:3000/api/courses/get", {headers : { token }}).then((response) => {
             if (response.status === 200)
                 setCourses(response.data);
             else 

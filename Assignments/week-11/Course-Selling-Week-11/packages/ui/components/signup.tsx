@@ -15,7 +15,7 @@ export function Signup(prop: propType) {
         let body = { username : email, password };
         axios.post(prop.backendUrl, null, {headers: body}).then((response) => {
             if (response.status === 200) 
-                router.push("/Login");
+                router.push("/login");
             })
             .catch((error) => {
                 setErrorMessage(error.response.data.message);

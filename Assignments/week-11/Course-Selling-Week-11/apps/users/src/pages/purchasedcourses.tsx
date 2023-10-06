@@ -1,21 +1,22 @@
 import React from "react";
 import axios from "axios";
 import { Typography, Card } from '@mui/material';
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import { courseSchema } from "ui";
 
 function PurchasedCourses() {
     const [courses, setCourses] = React.useState<courseSchema[]>([]);
-    const authKey = localStorage.getItem("Auth-Key-User");
-    const token = "Bearer " + authKey;
-    const navigate = useNavigate();
+    const router = useRouter();
 
     React.useEffect(() => {
-        axios.get("http://localhost:3000/api/courses/purchasedCourses", {headers : { token : token }}).then((response) => {
+        const authKey = localStorage.getItem("Auth-Key-User");
+        const token = "Bearer " + authKey;
+        console.log(token);
+        axios.get("http://localhost:3000/api/courses/purchasedCourses", {headers : { token }}).then((response) => {
         if (response.status === 200)
             setCourses(response.data.purchasedCourses);
         else 
-            navigate("/login");
+            router.push("/login");
     })}, []);
   
     return <div>

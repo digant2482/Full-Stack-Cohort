@@ -53,7 +53,7 @@ function UpdateCard(){
             published
         }
 
-        const response = await axios.post("/api/courses", body, {headers : { token }});
+        const response = await axios.post("/api/courses/post", body, {headers : { token }});
         if (response.status === 200) {
             router.push('/courses');
         } else {
