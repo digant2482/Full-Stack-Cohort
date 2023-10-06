@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Users } from "db";
 import dbConnect from '@/lib/db'
-import { getUser } from "@/lib/middleware";
-import { JwtPayload } from "jsonwebtoken";
+import { decryptedUserType, getUser } from "@/lib/middleware";
 
 export default async function handler (
     req: NextApiRequest,
@@ -12,11 +11,11 @@ export default async function handler (
     const authHeader = req.headers.token;
     if (typeof authHeader === 'string') {
         const token = authHeader.split(" ")[1];
-        getUser(token, async (userId: string | JwtPayload)=>{
-            if (!userId) {
+        getUser(token, async (userInfo: decryptedUserType)=>{
+            if (!userInfo) {
                 res.status(403).json({});
             } else {
-                const user = await Users.findOne({username : req.headers['username']}).populate("purchasedCourses");
+                const user = await Users.findOne({username : userInfo.username}).populate("purchasedCourses");
                 if (user){
                     res.json({purchasedCourses: user.purchasedCourses || []});
                 } else {

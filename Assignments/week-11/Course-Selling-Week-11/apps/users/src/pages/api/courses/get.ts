@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { Admins } from "db";
+import { Courses } from "db";
 import dbConnect from '@/lib/db'
 import { getUser } from "@/lib/middleware";
 import { JwtPayload } from "jsonwebtoken";

@@ -1,29 +1,31 @@
 import React from "react";
 import axios from "axios";
-import { useParams,useNavigate } from "react-router-dom";
 import { Card, Typography, Button } from "@mui/material";
 import { courseSchema } from "ui";
+import { useRouter } from "next/router";
 
 function CourseDetails () {
-    const {courseId} = useParams();
     const [course, setCourse] = React.useState<courseSchema>();
-    const authKey = localStorage.getItem("Auth-Key-User");
-    const token = "Bearer " + authKey;
-    const navigate = useNavigate();
+    const router = useRouter();
+    const courseId = router.query.courseId;
 
+    let token:string = "";
     React.useEffect(() => {
-        axios.get("http://localhost:3000/api/courses/" + courseId, {headers:{token}}).then((response) => {
-        if (response.status === 200){
-            setCourse(response.data);
-        }
-    })
+        if (courseId) {
+            const authKey = localStorage.getItem("Auth-Key-User");
+            token = "Bearer " + authKey;
 
-    }, [])
+            axios.get("http://localhost:3000/api/courses/fetchcourses/" + courseId, {headers:{token}}).then((response) => {
+            if (response.status === 200){
+                setCourse(response.data);
+            }})
+        }
+    }, [courseId])
 
     const purchaseCourse = () => {
-        axios.post("http://localhost:3000/api/courses/" + courseId, null, {headers : { token }}).then((response) => {
+        axios.post("http://localhost:3000/api/courses/purchasecourse/" + courseId, null, {headers : { token : "Bearer " + localStorage.getItem("Auth-Key-User") }}).then((response) => {
             if (response.status === 200){
-                navigate("/courses");
+                router.push("/courses");
             }
         })
     }

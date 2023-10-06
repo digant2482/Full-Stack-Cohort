@@ -21,8 +21,8 @@ const courseSchema = new mongoose.Schema({
 })
 
 //Define mongoose models
-const Users = mongoose.model("Users", userSchema);
-const Admins = mongoose.model("Admins", adminSchema);
-const Courses = mongoose.model("Courses", courseSchema);
+export const Users = mongoose.models.Users || mongoose.model("Users", userSchema);
+export const Admins = mongoose.models.Admins || mongoose.model("Admins", adminSchema);
+export const Courses = mongoose.models.Courses || mongoose.model("Courses", courseSchema);
 
 module.exports = { Users, Admins, Courses };
